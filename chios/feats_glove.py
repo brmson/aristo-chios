@@ -33,8 +33,11 @@ class GloveFeatures:
         for w in tokens:
             if w in self.glovedict:
                 vec += self.glovedict[w]
-        vec /= linalg.norm(vec)  # XXX just average?
+            # else: print('??? ' + w, file=sys.stderr)
+        if tokens:
+            vec /= len(tokens)
         return vec
 
     def _score_answer(self, qvec, avec):
-        return avec.dot(qvec)
+        # cosine distance
+        return avec.dot(qvec) / (linalg.norm(qvec) * linalg.norm(avec))
