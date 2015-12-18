@@ -5,6 +5,7 @@ import csv
 
 import chios.question as cq
 import chios.feats_glove
+import chios.feats_solr
 
 
 if __name__ == '__main__':
@@ -14,12 +15,14 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     questions = cq.load_questions(args.TSVFILE)
-    feat_glove = chios.feats_glove.GloveFeatures(args.glove_dim)
+    # feat_glove = chios.feats_glove.GloveFeatures(args.glove_dim)
+    feat_solr = chios.feats_solr.SolrFeatures()
 
     outf = open('prediction.csv', 'w')
     csv = csv.DictWriter(outf, fieldnames=['id', 'correctAnswer'])
     csv.writeheader()
     for q in questions:
-        s = feat_glove.score(q)
+        # s = feat_glove.score(q)
+        s = feat_solr.score(q)
         a = s.argmax()
         csv.writerow({'id': q.id, 'correctAnswer': 'ABCD'[a]})
