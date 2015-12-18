@@ -9,7 +9,7 @@ import chios.feats_glove
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--glove-dim', type=int, default=100, help='embedding size (50, 100, 200, 300 only)')
+    parser.add_argument('--glove-dim', type=int, default=50, help='embedding size (50, 100, 200, 300 only)')
     parser.add_argument('TSVFILE', help='questions set')
     args = parser.parse_args()
 
