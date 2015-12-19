@@ -23,8 +23,8 @@ if __name__ == '__main__':
     fvs = []
     labels = []
     for q in questions:
-        s1 = feat_glove.score(q)[:, np.newaxis]
-        s2 = feat_solr.score(q)[:, np.newaxis]
+        s1 = feat_glove.score(q)
+        s2 = feat_solr.score(q)
         s = np.hstack((s1, s2))
         l = np.array([i == q.correct for i in range(4)])[:, np.newaxis]
         fvs.append(s)

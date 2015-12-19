@@ -15,7 +15,7 @@ class SolrFeatures:
 
     def score(self, q):
         qtoks = q.get_question()
-        ascores = np.array([self._score_answer(qtoks, atoks) for atoks in q.get_answers()])
+        ascores = np.array([[self._score_answer(qtoks, atoks)] for atoks in q.get_answers()])
         return ascores
 
     def _score_answer(self, qtoks, atoks):

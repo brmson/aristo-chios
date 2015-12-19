@@ -21,13 +21,14 @@ if __name__ == '__main__':
     feat_solr = chios.feats_solr.SolrFeatures()
 
     cfier = joblib.load('data/model')
+    # cfier.coef_ = np.array([[0, 1]])
 
     outf = open('prediction.csv', 'w')
     csv = csv.DictWriter(outf, fieldnames=['id', 'correctAnswer'])
     csv.writeheader()
     for q in questions:
-        s1 = feat_glove.score(q)[:, np.newaxis]
-        s2 = feat_solr.score(q)[:, np.newaxis]
+        s1 = feat_glove.score(q)
+        s2 = feat_solr.score(q)
         s = np.hstack((s1, s2))
         p = cfier.predict_proba(s)[:, 1]
         a = p.argmax()
