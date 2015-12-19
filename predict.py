@@ -23,13 +23,25 @@ if __name__ == '__main__':
     cfier = joblib.load('data/model')
     # cfier.coef_ = np.array([[0, 1]])
 
-    outf = open('prediction.csv', 'w')
-    csv = csv.DictWriter(outf, fieldnames=['id', 'correctAnswer'])
-    csv.writeheader()
+    prf = open('prediction.csv', 'w')
+    anf = open('analysis.csv', 'w')
+    prcsv = csv.DictWriter(prf, fieldnames=['id', 'correctAnswer'])
+    prcsv.writeheader()
+    ancsv = csv.DictWriter(anf, fieldnames=['id', 'l', 'c', 'i', 'p', 'question', 'answer'])
+    ancsv.writeheader()
     for q in questions:
         s1 = feat_glove.score(q)
         s2 = feat_solr.score(q)
         s = np.hstack((s1, s2))
         p = cfier.predict_proba(s)[:, 1]
         a = p.argmax()
-        csv.writerow({'id': q.id, 'correctAnswer': 'ABCD'[a]})
+        prcsv.writerow({'id': q.id, 'correctAnswer': 'ABCD'[a]})
+        for i in range(4):
+            ancsv.writerow({
+                'id': q.id,
+                'l': 'ABCD'[i],
+                'c': '*' if i == q.correct else '.',
+                'i': '+' if i == a else '-',
+                'p': p[i],
+                'question': ' '.join(q.get_question()),
+                'answer': ' '.join(q.get_answers()[i])})
