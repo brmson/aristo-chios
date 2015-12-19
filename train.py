@@ -1,9 +1,9 @@
 #!/usr/bin/python3
 
 import argparse
-import csv
 import joblib
 import numpy as np
+from sklearn.linear_model import LogisticRegression
 
 import chios.question as cq
 import chios.feats_glove
@@ -20,15 +20,18 @@ if __name__ == '__main__':
     feat_glove = chios.feats_glove.GloveFeatures(args.glove_dim)
     feat_solr = chios.feats_solr.SolrFeatures()
 
-    cfier = joblib.load('data/model')
-
-    outf = open('prediction.csv', 'w')
-    csv = csv.DictWriter(outf, fieldnames=['id', 'correctAnswer'])
-    csv.writeheader()
+    fvs = []
+    labels = []
     for q in questions:
         s1 = feat_glove.score(q)[:, np.newaxis]
         s2 = feat_solr.score(q)[:, np.newaxis]
         s = np.hstack((s1, s2))
-        p = cfier.predict_proba(s)[:, 1]
-        a = p.argmax()
-        csv.writerow({'id': q.id, 'correctAnswer': 'ABCD'[a]})
+        l = np.array([i == q.correct for i in range(4)])[:, np.newaxis]
+        fvs.append(s)
+        labels.append(l)
+    fvs = np.vstack(tuple(fvs))
+    labels = np.vstack(tuple(labels))
+
+    cfier = LogisticRegression(class_weight='auto')
+    cfier.fit(fvs, labels)
+    joblib.dump(cfier, 'data/model', compress=3)

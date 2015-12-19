@@ -25,7 +25,7 @@ class GloveFeatures:
     def score(self, q):
         qvec = self._get_vec(q.get_question())
         avecs = [self._get_vec(a) for a in q.get_answers()]
-        ascores = np.array([self._score_answer(qvec, avec) for avec in avecs])
+        ascores = np.nan_to_num(np.array([self._score_answer(qvec, avec) for avec in avecs]))
         return ascores
 
     def _get_vec(self, tokens):
