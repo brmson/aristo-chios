@@ -4,6 +4,7 @@ import argparse
 import joblib
 import numpy as np
 from sklearn.linear_model import LogisticRegression
+import sys
 
 import chios.question as cq
 import chios.feats_glove
@@ -19,10 +20,12 @@ if __name__ == '__main__':
     questions = cq.load_questions(args.TSVFILE)
     feat_glove = chios.feats_glove.GloveFeatures(args.glove_dim)
     feat_solr = chios.feats_solr.SolrFeatures()
+    print('Initialized.', file=sys.stderr)
 
     fvs = []
     labels = []
-    for q in questions:
+    for i, q in enumerate(questions):
+        print('\rQuestion %d/%d' % (i, len(questions)), file=sys.stderr, end='')
         s1 = feat_glove.score(q)
         s2 = feat_solr.score(q)
         s = np.hstack((s1, s2))
@@ -32,6 +35,7 @@ if __name__ == '__main__':
     fvs = np.vstack(tuple(fvs))
     labels = np.vstack(tuple(labels))
 
-    cfier = LogisticRegression(class_weight='auto')
-    cfier.fit(fvs, labels)
+    print('', file=sys.stderr)
+    cfier = LogisticRegression(class_weight='balanced')
+    cfier.fit(fvs, labels[:,0])
     joblib.dump(cfier, 'data/model', compress=3)

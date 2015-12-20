@@ -4,6 +4,7 @@ import argparse
 import csv
 import joblib
 import numpy as np
+import sys
 
 import chios.question as cq
 import chios.feats_glove
@@ -23,13 +24,16 @@ if __name__ == '__main__':
     cfier = joblib.load('data/model')
     # cfier.coef_ = np.array([[0, 1]])
 
+    print('Initialized.', file=sys.stderr)
+
     prf = open('prediction.csv', 'w')
     anf = open('analysis.csv', 'w')
     prcsv = csv.DictWriter(prf, fieldnames=['id', 'correctAnswer'])
     prcsv.writeheader()
     ancsv = csv.DictWriter(anf, fieldnames=['id', 'l', 'c', 'i', 'p', 'question', 'answer'])
     ancsv.writeheader()
-    for q in questions:
+    for i, q in enumerate(questions):
+        print('\rQuestion %d/%d' % (i, len(questions)), file=sys.stderr, end='')
         s1 = feat_glove.score(q)
         s2 = feat_solr.score(q)
         s = np.hstack((s1, s2))
@@ -45,3 +49,5 @@ if __name__ == '__main__':
                 'p': p[i],
                 'question': ' '.join(q.get_question()),
                 'answer': ' '.join(q.get_answers()[i])})
+
+    print('', file=sys.stderr)
