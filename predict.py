@@ -30,7 +30,7 @@ if __name__ == '__main__':
     anf = open('analysis.csv', 'w')
     prcsv = csv.DictWriter(prf, fieldnames=['id', 'correctAnswer'])
     prcsv.writeheader()
-    ancsv = csv.DictWriter(anf, fieldnames=['id', 'l', 'c', 'i', 'p', 'question', 'answer'])
+    ancsv = csv.DictWriter(anf, fieldnames=['id', 'question', 'qNE', 'l', 'c', 'i', 'p', 'answer', 'aNE'])
     ancsv.writeheader()
     for i, q in enumerate(questions):
         print('\rQuestion %d/%d' % (i, len(questions)), file=sys.stderr, end='')
@@ -40,14 +40,19 @@ if __name__ == '__main__':
         p = cfier.predict_proba(s)[:, 1]
         a = p.argmax()
         prcsv.writerow({'id': q.id, 'correctAnswer': 'ABCD'[a]})
+        qne = q.get_question_ne()
+        ane = q.get_answers_ne()
         for i in range(4):
             ancsv.writerow({
                 'id': q.id,
+                'question': ' '.join(q.get_question()),
+                'qNE': '; '.join(['%s(%.3f)' % (ne.label, ne.score) for ne in qne]),
                 'l': 'ABCD'[i],
                 'c': '*' if i == q.correct else '.',
                 'i': '+' if i == a else '-',
                 'p': p[i],
-                'question': ' '.join(q.get_question()),
-                'answer': ' '.join(q.get_answers()[i])})
+                'answer': ' '.join(q.get_answers()[i]),
+                'aNE': '; '.join(['%s(%.3f)' % (ne.label, ne.score) for ne in ane[i]]),
+            })
 
     print('', file=sys.stderr)
