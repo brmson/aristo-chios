@@ -24,8 +24,7 @@ class AbstractCooccurrenceFeatures:
     def score(self, q):
         qtoks = q.tokens()
         qne = q.ne()
-        acounts = np.array([self._count_answer(qtoks, qne, a) for a in q.answers])
-        ascores = acounts / (np.max(acounts, axis=0)+0.1)
+        ascores = np.array([self._count_answer(qtoks, qne, a) for a in q.answers])
         return ascores
 
     def _count_answer(self, qtoks, qne, a):
@@ -40,14 +39,14 @@ class AbstractCooccurrenceFeatures:
             if e.surface == a.text:  # only if the NE spans the whole answer
                 ae_counts += self._count_cooccur(e, qtoks)
 
-        return (qe_counts, ae_counts)
+        return (qe_counts / self.top_ents, ae_counts / self.top_ents)
 
     def _count_cooccur(self, entity, tokens):
         """ count the number of times any of the tokens is within
         the entity abstract
 
         XXX: use dbpedia for this instead? """
-        if entity.pageId is None:
+        if not tokens or entity.pageId is None:
             return 0
         cache_key = str(entity.pageId) + ' || ' + ' '.join(tokens)
         if cache_key in self.countcache:
@@ -67,7 +66,7 @@ class AbstractCooccurrenceFeatures:
             count += len(matches)
 
         self.countcache[cache_key] = count
-        return count
+        return count / len(tokens)
 
     def labels(self):
         return ['qe_atoks', 'ae_qtoks']
