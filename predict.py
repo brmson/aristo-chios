@@ -1,47 +1,31 @@
 #!/usr/bin/python3
 
+from __future__ import print_function  # for vim and jedi using py2
+
 import argparse
 import csv
 import joblib
-import numpy as np
 import sys
 
 import chios.question as cq
-import chios.feats_glove
-import chios.feats_solr
-import chios.feats_absoccur
+import chios.feats
 
 
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--glove-dim', type=int, default=50, help='embedding size (50, 100, 200, 300 only)')
-    parser.add_argument('TSVFILE', help='questions set')
-    args = parser.parse_args()
-
-    questions = cq.load_questions(args.TSVFILE)
-    feat_glove = chios.feats_glove.GloveFeatures(args.glove_dim)
-    feat_solr = chios.feats_solr.SolrFeatures()
-    feat_absoccur = chios.feats_absoccur.AbstractCooccurrenceFeatures()
-
-    cfier = joblib.load('data/model')
-    # cfier.coef_ = np.array([[0, 1]])
-
-    print('Initialized.', file=sys.stderr)
-
+def predict_and_dump(questions, featgen, cfier):
     prf = open('prediction.csv', 'w')
     anf = open('analysis.csv', 'w')
     prcsv = csv.DictWriter(prf, fieldnames=['id', 'correctAnswer'])
     prcsv.writeheader()
     ancsv = csv.DictWriter(anf, fieldnames=['id', 'question', 'qNE', 'l', 'c', 'i', 'p', 'answer', 'aNE'])
     ancsv.writeheader()
+
     for i, q in enumerate(questions):
         print('\rQuestion %d/%d' % (i, len(questions)), file=sys.stderr, end='')
-        s1 = feat_glove.score(q)
-        s2 = feat_solr.score(q)
-        s3 = feat_absoccur.score(q)
-        s = np.hstack((s1, s2, s3))
+
+        s = featgen.score(q)
         p = cfier.predict_proba(s)[:, 1]
         choice = p.argmax()
+
         prcsv.writerow({'id': q.id, 'correctAnswer': 'ABCD'[choice]})
         qne = q.ne()
         for i, a in enumerate(q.answers):
@@ -58,3 +42,19 @@ if __name__ == '__main__':
             })
 
     print('', file=sys.stderr)
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--glove-dim', type=int, default=50, help='embedding size (50, 100, 200, 300 only)')
+    parser.add_argument('TSVFILE', help='questions set')
+    args = parser.parse_args()
+
+    questions = cq.load_questions(args.TSVFILE)
+    featgen = chios.feats.FeatureGenerator(args.glove_dim)
+    cfier = joblib.load('data/model')
+    # cfier.coef_ = np.array([[0, 1]])
+
+    print('Initialized.', file=sys.stderr)
+
+    predict_and_dump(questions, featgen, cfier)

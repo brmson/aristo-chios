@@ -1,5 +1,7 @@
 #!/usr/bin/python3
 
+from __future__ import print_function  # for vim and jedi using py2
+
 import argparse
 import joblib
 import numpy as np
@@ -7,9 +9,25 @@ from sklearn.linear_model import LogisticRegression
 import sys
 
 import chios.question as cq
-import chios.feats_glove
-import chios.feats_solr
-import chios.feats_absoccur
+import chios.feats
+
+
+def train_cfier(questions, featgen):
+    fvs = []
+    labels = []
+    for i, q in enumerate(questions):
+        print('\rQuestion %d/%d' % (i, len(questions)), file=sys.stderr, end='')
+        s = featgen.score(q)
+        l = np.array([i == q.correct for i in range(4)])[:, np.newaxis]
+        fvs.append(s)
+        labels.append(l)
+    fvs = np.vstack(tuple(fvs))
+    labels = np.vstack(tuple(labels))
+
+    print('', file=sys.stderr)
+    cfier = LogisticRegression(class_weight='balanced')
+    cfier.fit(fvs, labels[:, 0])
+    return cfier
 
 
 if __name__ == '__main__':
@@ -19,26 +37,9 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     questions = cq.load_questions(args.TSVFILE)
-    feat_glove = chios.feats_glove.GloveFeatures(args.glove_dim)
-    feat_solr = chios.feats_solr.SolrFeatures()
-    feat_absoccur = chios.feats_absoccur.AbstractCooccurrenceFeatures()
+    featgen = chios.feats.FeatureGenerator(args.glove_dim)
     print('Initialized.', file=sys.stderr)
 
-    fvs = []
-    labels = []
-    for i, q in enumerate(questions):
-        print('\rQuestion %d/%d' % (i, len(questions)), file=sys.stderr, end='')
-        s1 = feat_glove.score(q)
-        s2 = feat_solr.score(q)
-        s3 = feat_absoccur.score(q)
-        s = np.hstack((s1, s2, s3))
-        l = np.array([i == q.correct for i in range(4)])[:, np.newaxis]
-        fvs.append(s)
-        labels.append(l)
-    fvs = np.vstack(tuple(fvs))
-    labels = np.vstack(tuple(labels))
+    cfier = train_cfier(questions, featgen)
 
-    print('', file=sys.stderr)
-    cfier = LogisticRegression(class_weight='balanced')
-    cfier.fit(fvs, labels[:,0])
     joblib.dump(cfier, 'data/model', compress=3)
