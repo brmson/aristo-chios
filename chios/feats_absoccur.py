@@ -50,22 +50,27 @@ class AbstractCooccurrenceFeatures:
             return 0
         cache_key = str(entity.pageId) + ' || ' + ' '.join(tokens)
         if cache_key in self.countcache:
-            return self.countcache[cache_key]
+            count = self.countcache[cache_key]
 
-        results = list(self.solr.search('id:%s' % (entity.pageId,), fl='*'))
-        if not results:
+        else:
+            results = list(self.solr.search('id:%s' % (entity.pageId,), fl='*'))
+            if not results:
+                return 0
+            text = results[0]['text'][1:]  # skip leading \n
+
+            text = text[:text.index('\n')]  # first paragraph
+            abstract = nlp(text)
+
+            count = 0
+            for t in tokens:
+                matches = [atok for atok in abstract if atok.text.lower() == t]
+                if matches:
+                    count += (1 + np.log(len(matches)))  # * (-np.log(matches[0].prob))  # idf
+
+            self.countcache[cache_key] = count
+
+        if count == 0:
             return 0
-        text = results[0]['text'][1:]  # skip leading \n
-
-        text = text[:text.index('\n')]  # first paragraph
-        abstract = nlp(text)
-
-        count = 0
-        for t in tokens:
-            matches = [atok.text for atok in abstract if atok.text.lower() == t]
-            count += len(matches)
-
-        self.countcache[cache_key] = count
         return count / len(tokens)
 
     def labels(self):
