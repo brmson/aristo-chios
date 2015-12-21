@@ -31,10 +31,6 @@ class AbstractCooccurrenceFeatures:
         """ return (question_entity_counts, answer_entity_counts) tuple """
         atoks = a.tokens()
 
-        query = ' '.join(qtoks) + '||' + ' '.join(atoks)
-        if query in self.countcache:
-            return self.countcache[query]
-
         qe_counts = 0
         for e in qne:
             qe_counts += self._count_cooccur(e, atoks)
@@ -42,7 +38,6 @@ class AbstractCooccurrenceFeatures:
         for e in a.ne():
             ae_counts += self._count_cooccur(e, qtoks)
 
-        self.countcache[query] = (qe_counts, ae_counts)
         return (qe_counts, ae_counts)
 
     def _count_cooccur(self, entity, tokens):
@@ -52,6 +47,10 @@ class AbstractCooccurrenceFeatures:
         XXX: use dbpedia for this instead? """
         if entity.pageId is None:
             return 0
+        cache_key = str(entity.pageId) + ' || ' + ' '.join(tokens)
+        if cache_key in self.countcache:
+            return self.countcache[cache_key]
+
         results = list(self.solr.search('id:%s' % (entity.pageId,), fl='*'))
         if not results:
             return 0
@@ -64,6 +63,8 @@ class AbstractCooccurrenceFeatures:
         for t in tokens:
             matches = [atok.text for atok in abstract if atok.text.lower() == t]
             count += len(matches)
+
+        self.countcache[cache_key] = count
         return count
 
     def labels(self):
