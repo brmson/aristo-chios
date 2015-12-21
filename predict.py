@@ -38,21 +38,20 @@ if __name__ == '__main__':
         s2 = feat_solr.score(q)
         s = np.hstack((s1, s2))
         p = cfier.predict_proba(s)[:, 1]
-        a = p.argmax()
-        prcsv.writerow({'id': q.id, 'correctAnswer': 'ABCD'[a]})
-        qne = q.get_question_ne()
-        ane = q.get_answers_ne()
-        for i in range(4):
+        choice = p.argmax()
+        prcsv.writerow({'id': q.id, 'correctAnswer': 'ABCD'[choice]})
+        qne = q.ne()
+        for i, a in enumerate(q.answers):
             ancsv.writerow({
                 'id': q.id,
-                'question': ' '.join(q.get_question()),
+                'question': ' '.join(q.tokens()),
                 'qNE': '; '.join(['%s(%.3f)' % (ne.label, ne.score) for ne in qne]),
                 'l': 'ABCD'[i],
                 'c': '*' if i == q.correct else '.',
-                'i': '+' if i == a else '-',
+                'i': '+' if i == choice else '-',
                 'p': p[i],
-                'answer': ' '.join(q.get_answers()[i]),
-                'aNE': '; '.join(['%s(%.3f)' % (ne.label, ne.score) for ne in ane[i]]),
+                'answer': ' '.join(a.tokens()),
+                'aNE': '; '.join(['%s(%.3f)' % (ne.label, ne.score) for ne in a.ne()]),
             })
 
     print('', file=sys.stderr)

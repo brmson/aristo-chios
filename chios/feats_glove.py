@@ -23,8 +23,8 @@ class GloveFeatures:
         self.glovedict = _get_glove_dict('data/glove.6B.%sd.txt' % (N,))
 
     def score(self, q):
-        qvec = self._get_vec(q.get_question())
-        avecs = [self._get_vec(a) for a in q.get_answers()]
+        qvec = self._get_vec(q.tokens())
+        avecs = [self._get_vec(a.tokens()) for a in q.answers]
         ascores = np.nan_to_num(np.array([[self._score_answer(qvec, avec)] for avec in avecs]))
         return ascores
         # Alternative: REturn powerset of vectors

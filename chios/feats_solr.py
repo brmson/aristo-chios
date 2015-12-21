@@ -14,8 +14,8 @@ class SolrFeatures:
         self.scorecache = shelve.open('data/solrscore.cache')
 
     def score(self, q):
-        qtoks = q.get_question()
-        ascores = np.array([[self._score_answer(qtoks, atoks)] for atoks in q.get_answers()])
+        qtoks = q.tokens()
+        ascores = np.array([[self._score_answer(qtoks, a.tokens())] for a in q.answers])
         return ascores
 
     def _score_answer(self, qtoks, atoks):
