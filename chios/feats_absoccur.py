@@ -59,3 +59,6 @@ class AbstractCooccurrenceFeatures:
         for t in tokens:
             count += text.count(t)
         return count
+
+    def labels(self):
+        return ['qe_atoks', 'ae_qtoks']

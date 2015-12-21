@@ -44,3 +44,6 @@ class GloveFeatures:
     def _score_answer(self, qvec, avec):
         # cosine distance
         return avec.dot(qvec) / (linalg.norm(qvec) * linalg.norm(avec))
+
+    def labels(self):
+        return ['glovecos']

@@ -22,3 +22,7 @@ class FeatureGenerator:
         s3 = self.feat_absoccur.score(q)
         s = np.hstack((s1, s2, s3))
         return s
+
+    def labels(self):
+        """ output labels for columns in the feature matrix """
+        return self.feat_glove.labels() + self.feat_solr.labels() + self.feat_absoccur.labels()

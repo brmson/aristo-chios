@@ -16,7 +16,7 @@ def predict_and_dump(questions, featgen, cfier):
     anf = open('analysis.csv', 'w')
     prcsv = csv.DictWriter(prf, fieldnames=['id', 'correctAnswer'])
     prcsv.writeheader()
-    ancsv = csv.DictWriter(anf, fieldnames=['id', 'question', 'qNE', 'l', 'c', 'i', 'p', 'answer', 'aNE'])
+    ancsv = csv.DictWriter(anf, fieldnames=['id', 'question', 'qNE', 'l', 'c', 'i', 'p', 'answer', 'aNE'] + featgen.labels())
     ancsv.writeheader()
 
     for i, q in enumerate(questions):
@@ -29,7 +29,7 @@ def predict_and_dump(questions, featgen, cfier):
         prcsv.writerow({'id': q.id, 'correctAnswer': 'ABCD'[choice]})
         qne = q.ne()
         for i, a in enumerate(q.answers):
-            ancsv.writerow({
+            row = {
                 'id': q.id,
                 'question': ' '.join(q.tokens()),
                 'qNE': '; '.join(['%s(%.3f)' % (ne.label, ne.score) for ne in qne]),
@@ -38,8 +38,10 @@ def predict_and_dump(questions, featgen, cfier):
                 'i': '+' if i == choice else '-',
                 'p': p[i],
                 'answer': ' '.join(a.tokens()),
-                'aNE': '; '.join(['%s(%.3f)' % (ne.label, ne.score) for ne in a.ne()]),
-            })
+                'aNE': '; '.join(['%s(%.3f)' % (ne.label, ne.score) for ne in a.ne()])
+            }
+            row.update(dict(zip(featgen.labels(), ['%.2f' % (f,) for f in s[i]])))
+            ancsv.writerow(row)
 
     print('', file=sys.stderr)
 

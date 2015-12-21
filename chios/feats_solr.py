@@ -28,3 +28,6 @@ class SolrFeatures:
         score = results[0]['score']
         self.scorecache[query] = score
         return score
+
+    def labels(self):
+        return ['solr0sc']
