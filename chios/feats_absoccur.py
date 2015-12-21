@@ -65,13 +65,11 @@ class AbstractCooccurrenceFeatures:
             for t in tokens:
                 matches = [atok for atok in abstract if atok.text.lower() == t]
                 if matches:
-                    count += (1 + np.log(len(matches)))  # * (-np.log(matches[0].prob))  # idf
+                    count += len(matches) / len(abstract)
 
             self.countcache[cache_key] = count
 
-        if count == 0:
-            return 0
-        return count / len(tokens)
+        return count
 
     def labels(self):
         return ['qe_atoks', 'ae_qtoks']
