@@ -15,10 +15,11 @@ nlp = English(parser=False)  # parser=False radically cuts down the load time
 
 
 class AbstractCooccurrenceFeatures:
-    def __init__(self):
+    def __init__(self, top_ents=1):
         # TODO: Configurable URL
         self.solr = pysolr.Solr('http://enwiki.ailao.eu:8983/solr/', timeout=10)
         self.countcache = shelve.open('data/abstractcount.cache')
+        self.top_ents = top_ents
 
     def score(self, q):
         qtoks = q.tokens()
@@ -32,10 +33,10 @@ class AbstractCooccurrenceFeatures:
         atoks = a.tokens()
 
         qe_counts = 0
-        for e in qne:
+        for e in qne[:self.top_ents]:
             qe_counts += self._count_cooccur(e, atoks)
         ae_counts = 0
-        for e in a.ne():
+        for e in a.ne()[:self.top_ents]:
             ae_counts += self._count_cooccur(e, qtoks)
 
         return (qe_counts, ae_counts)
