@@ -9,6 +9,7 @@ import sys
 import chios.question as cq
 import chios.feats_glove
 import chios.feats_solr
+import chios.feats_absoccur
 
 
 if __name__ == '__main__':
@@ -20,6 +21,7 @@ if __name__ == '__main__':
     questions = cq.load_questions(args.TSVFILE)
     feat_glove = chios.feats_glove.GloveFeatures(args.glove_dim)
     feat_solr = chios.feats_solr.SolrFeatures()
+    feat_absoccur = chios.feats_absoccur.AbstractCooccurrenceFeatures()
     print('Initialized.', file=sys.stderr)
 
     fvs = []
@@ -28,7 +30,8 @@ if __name__ == '__main__':
         print('\rQuestion %d/%d' % (i, len(questions)), file=sys.stderr, end='')
         s1 = feat_glove.score(q)
         s2 = feat_solr.score(q)
-        s = np.hstack((s1, s2))
+        s3 = feat_absoccur.score(q)
+        s = np.hstack((s1, s2, s3))
         l = np.array([i == q.correct for i in range(4)])[:, np.newaxis]
         fvs.append(s)
         labels.append(l)
