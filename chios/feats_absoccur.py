@@ -37,7 +37,8 @@ class AbstractCooccurrenceFeatures:
             qe_counts += self._count_cooccur(e, atoks)
         ae_counts = 0
         for e in a.ne()[:self.top_ents]:
-            ae_counts += self._count_cooccur(e, qtoks)
+            if e.surface == a.text:  # only if the NE spans the whole answer
+                ae_counts += self._count_cooccur(e, qtoks)
 
         return (qe_counts, ae_counts)
 
