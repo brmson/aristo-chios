@@ -5,9 +5,13 @@ linked from the question or answer.
 TODO: tfidf? we could abuse spacy's prob() for idf
 """
 
+import numpy as np
 import pysolr
 import shelve
-import numpy as np
+from spacy.en import English
+
+
+nlp = English(parser=False)  # parser=False radically cuts down the load time
 
 
 class AbstractCooccurrenceFeatures:
@@ -54,10 +58,12 @@ class AbstractCooccurrenceFeatures:
         text = results[0]['text'][1:]  # skip leading \n
 
         text = text[:text.index('\n')]  # first paragraph
+        abstract = nlp(text)
+
         count = 0
-        # print('<<%s>> :: %s' % (text, tokens))
         for t in tokens:
-            count += text.count(t)
+            matches = [atok.text for atok in abstract if atok.text.lower() == t]
+            count += len(matches)
         return count
 
     def labels(self):
