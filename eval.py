@@ -4,10 +4,11 @@
 import csv
 import sys
 
-if __name__ == "__main__":
-    with open(sys.argv[1], 'r') as f:
+
+def count_corr(gsname, pname):
+    with open(gsname, 'r') as f:
         goldstandard = list(csv.reader(f, delimiter='\t'))
-    with open(sys.argv[2], 'r') as f:
+    with open(pname, 'r') as f:
         prediction = list(csv.reader(f, delimiter=','))
 
     corr = 0
@@ -17,5 +18,11 @@ if __name__ == "__main__":
             corr += 1
         else:
             wrong += 1
+
+    return corr, wrong
+
+
+if __name__ == "__main__":
+    corr, wrong = count_corr(sys.argv[1], sys.argv[2])
 
     print('Accuracy: %.5f (%d)' % (corr / (corr+wrong), corr))
