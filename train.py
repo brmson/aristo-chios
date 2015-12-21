@@ -5,7 +5,6 @@ from __future__ import print_function  # for vim and jedi using py2
 import argparse
 import joblib
 import numpy as np
-from sklearn.linear_model import LogisticRegression
 import sys
 
 import chios.question as cq
@@ -25,7 +24,14 @@ def train_cfier(questions, featgen):
     labels = np.vstack(tuple(labels))
 
     print('', file=sys.stderr)
+
+    from sklearn.linear_model import LogisticRegression
     cfier = LogisticRegression(class_weight='balanced')
+
+    # Slightly better but slower:
+    # from sklearn.svm import SVC
+    # cfier = SVC(kernel='linear', class_weight='balanced', probability=True)
+
     cfier.fit(fvs, labels[:, 0])
     return cfier
 
