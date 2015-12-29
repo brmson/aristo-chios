@@ -33,8 +33,12 @@ def _tokenize(s):
 class Question:
     def __init__(self, gsrec):
         self.id = gsrec['id']
-        self.correct = 'ABCD'.index(gsrec['correctAnswer']) if 'correctAnswer' in gsrec else None
         self.answers = [Answer(gsrec['answer'+l]) for l in ['A', 'B', 'C', 'D']]
+        if 'correctAnswer' in gsrec:
+            self.correct = 'ABCD'.index(gsrec['correctAnswer'])
+            self.answers[self.correct].is_correct = True
+        else:
+            self.correct = None
         self.text = gsrec['question']
 
         # cache
@@ -55,8 +59,9 @@ class Question:
 
 
 class Answer:
-    def __init__(self, text):
+    def __init__(self, text, is_correct=False):
         self.text = text
+        self.is_correct = is_correct
 
         # cache
         self.tokens_ = _tokenize(text)
