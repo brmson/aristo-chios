@@ -8,10 +8,10 @@ import numpy as np
 
 
 class SolrFeatures:
-    def __init__(self):
-        # TODO: Configurable URL
-        self.solr = pysolr.Solr('http://enwiki.ailao.eu:8983/solr/', timeout=10)
-        self.scorecache = shelve.open('data/solrscore.cache')
+    def __init__(self, url='http://enwiki.ailao.eu:8983/solr', core='collection1'):
+        self.solr = pysolr.Solr(url + '/' + core, timeout=10)
+        self.core = core
+        self.scorecache = shelve.open('data/solrscore-'+core+'.cache')
 
     def score(self, q):
         qtoks = q.tokens()
@@ -22,6 +22,7 @@ class SolrFeatures:
         query = ' '.join(qtoks + ['+'+t for t in atoks])
         if query in self.scorecache:
             return self.scorecache[query]
+        #results = list(self.solr.search(query, fl='*,score', defType='edismax', qf='text^1', pf='text~4^8 text~8^4'))
         results = list(self.solr.search(query, fl='*,score', defType='edismax', qf='text^1', pf='text~4^2'))
         if not results:
             return 0
@@ -30,4 +31,4 @@ class SolrFeatures:
         return score
 
     def labels(self):
-        return ['solr0sc']
+        return ['solr'+self.core+'0sc']

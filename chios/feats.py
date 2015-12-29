@@ -15,6 +15,7 @@ class FeatureGenerator:
         self.feats = [
             # chios.feats_glove.GloveFeatures(glove_dim),
             chios.feats_solr.SolrFeatures(),  # TODO: Configurable enwiki URL
+            chios.feats_solr.SolrFeatures(core='ck12'),
             chios.feats_absoccur.AbstractCooccurrenceFeatures(),
             chios.feats_entoccur.EntityCooccurrenceFeatures(),
         ]
