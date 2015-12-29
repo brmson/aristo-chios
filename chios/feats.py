@@ -7,6 +7,7 @@ import numpy as np
 # import chios.feats_glove
 import chios.feats_solr
 import chios.feats_absoccur
+import chios.feats_entoccur
 
 
 class FeatureGenerator:
@@ -15,6 +16,7 @@ class FeatureGenerator:
             # chios.feats_glove.GloveFeatures(glove_dim),
             chios.feats_solr.SolrFeatures(),  # TODO: Configurable enwiki URL
             chios.feats_absoccur.AbstractCooccurrenceFeatures(),
+            chios.feats_entoccur.EntityCooccurrenceFeatures(),
         ]
 
     def score(self, q):
