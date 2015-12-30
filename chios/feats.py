@@ -14,8 +14,8 @@ class FeatureGenerator:
     def __init__(self, glove_dim, dump_reports=False):
         self.feats = [
             # chios.feats_glove.GloveFeatures(glove_dim),
-            chios.feats_solr.SolrFeatures(),  # TODO: Configurable enwiki URL
-            chios.feats_solr.SolrFeatures(core='ck12'),
+            chios.feats_solr.SolrFeatures(dump_reports=dump_reports),  # TODO: Configurable enwiki URL
+            chios.feats_solr.SolrFeatures(dump_reports=dump_reports, core='ck12'),
             chios.feats_absoccur.AbstractCooccurrenceFeatures(dump_reports=dump_reports),
             chios.feats_entoccur.EntityCooccurrenceFeatures(dump_reports=dump_reports),
         ]
