@@ -43,7 +43,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     questions = cq.load_questions(args.TSVFILE)
-    featgen = chios.feats.FeatureGenerator(args.glove_dim)
+    featgen = chios.feats.FeatureGenerator(args.glove_dim, dump_reports=True)
     print('Initialized.', file=sys.stderr)
 
     cfier = train_cfier(questions, featgen)
