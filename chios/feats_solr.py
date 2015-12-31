@@ -84,8 +84,7 @@ class SolrFeatures:
             'title': result.get('titleText', ''),
             'abstract': abstract,
         })
-        # return foundCo
-        return 0  # XXX: very detrimental, apparently...
+        return foundCo
 
     def labels(self):
         return ['solr'+self.core+'i', 'solr'+self.core+'0sc', 'solr'+self.core+'0ao']
