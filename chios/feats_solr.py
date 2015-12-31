@@ -36,17 +36,17 @@ class SolrFeatures:
         ascores = np.array([self._score_answer(qtoks, qne, a, {'q': q, 'a': a}) for a in q.answers])
         return ascores
 
-    def _score_answer(self, qtoks, atoks):
-        query = ' '.join(qtoks + ['+'+t for t in atoks])
+    def _score_answer(self, qtoks, qne, a, report):
+        query = ' '.join(qtoks + ['+'+t for t in a.tokens()])
         if query in self.scorecache:
             return self.scorecache[query]
 
         # results = list(self.solr.search(query, fl='*,score', defType='edismax', qf='text^1', pf='text~4^8 text~8^4'))
         results = list(self.solr.search(query, fl='*,score', defType='edismax', qf='text^1', pf='text~4^2'))
         if results:
-            score = [results[0]['score'], int(self._abstract_cooccur(results[0], qne, a.ne(), report))]
+            score = [1, results[0]['score'], int(self._abstract_cooccur(results[0], qne, a.ne(), report))]
         else:
-            score = [0, 0]
+            score = [0, 0, 0]
         self.scorecache[query] = score
         return score
 
@@ -88,4 +88,4 @@ class SolrFeatures:
         return 0  # XXX: very detrimental, apparently...
 
     def labels(self):
-        return ['solr'+self.core+'0sc', 'solr'+self.core+'0ao']
+        return ['solr'+self.core+'i', 'solr'+self.core+'0sc', 'solr'+self.core+'0ao']
