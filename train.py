@@ -47,5 +47,6 @@ if __name__ == '__main__':
     print('Initialized.', file=sys.stderr)
 
     cfier = train_cfier(questions, featgen)
+    print(list(zip(featgen.labels(), cfier.coef_[0])), file=sys.stderr)
 
     joblib.dump(cfier, 'data/model', compress=3)

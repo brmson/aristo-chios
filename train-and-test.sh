@@ -10,6 +10,11 @@ if false; then
 	)
 fi
 time ./train.py ../trainmodel_set.tsv
-time ./predict.py ../localval_set.tsv
 echo
+echo - Training set:
+time ./predict.py ../trainmodel_set.tsv
+./eval.py ../trainmodel_set.tsv prediction.csv
+echo
+echo - Local validation set:
+time ./predict.py ../localval_set.tsv
 ./eval.py ../localval_set.tsv prediction.csv
