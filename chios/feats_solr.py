@@ -26,7 +26,7 @@ class SolrFeatures:
             return
         if self.report is None:
             self.reportf = open('solraoccur-'+self.core+'.csv', 'w')
-            self.report = csv.DictWriter(self.reportf, fieldnames=['qId', 'isCorrect', 'qText', 'aText', 'qNE', 'aNE', 'foundCo', 'core', 'score', 'title', 'abstract'])
+            self.report = csv.DictWriter(self.reportf, fieldnames=['qId', 'isCorrect', 'qText', 'aText', 'qaText', 'qNE', 'aNE', 'foundCo', 'core', 'score', 'title', 'relsents', 'abstract'])
             self.report.writeheader()
         self.report.writerow(row)
 
@@ -62,11 +62,13 @@ class SolrFeatures:
             abstract = text[:text.index('\n')]  # first paragraph
         except ValueError:  # esp. on ck12
             abstract = text
+        relsents = []
         sentences = segmenter.tokenize(abstract)
         for sent in sentences:
-            if qne[0].surface.lower() not in sent.lower():
-                continue
             if ane[0].surface.lower() not in sent.lower():
+                continue
+            relsents.append(sent)
+            if qne[0].surface.lower() not in sent.lower():
                 continue
             foundCo = True
             break
@@ -76,12 +78,14 @@ class SolrFeatures:
             'isCorrect': int(report['a'].is_correct),
             'qText': report['q'].text,
             'aText': report['a'].text,
+            'qaText': report['q'].qaint(report['a']),
             'qNE': qne[0].surface,
             'aNE': ane[0].surface,
             'foundCo': int(foundCo),
             'core': self.core,
             'score': result['score'],
             'title': result.get('titleText', ''),
+            'relsents': ' '.join(relsents),
             'abstract': abstract,
         })
         return foundCo

@@ -57,6 +57,28 @@ class Question:
     def ne(self):
         return entlinker.linkText(self.spacy())
 
+    def qaint(self, ans):
+        """ Return a sentence that combines the question and answer
+        to a single statement based on simple substitution rules """
+
+        # first, transform the answer
+        def repl(m):
+            return self.answers['ABCD'.index(m.group())].text
+        text = re.sub('\b[ABCD]\b', repl, ans.text)
+
+        if '___' in self.text:
+            return re.sub('___*', text, self.text)
+        elif re.match('.*[^.?!]$', self.text):
+            return self.text + ' ' + text
+        elif 'Wh' in self.text or 'wh' in self.text:
+            # last match
+            return re.sub(r'\b\w+h[wW]\b', text[::-1], self.text[::-1], count=1)[::-1]
+        elif 'how' in self.text or 'How' in self.text:
+            return re.sub(r'\b[hH]ow\b', text + ' is how', self.text)
+        else:
+            # print('??? %s || %s' % (self.text, text))
+            return self.text + ' ' + text
+
 
 class Answer:
     def __init__(self, text, is_correct=False):
