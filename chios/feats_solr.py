@@ -44,7 +44,13 @@ class SolrFeatures:
         # results = list(self.solr.search(query, fl='*,score', defType='edismax', qf='text^1', pf='text~4^8 text~8^4'))
         results = list(self.solr.search(query, fl='*,score', defType='edismax', qf='text^1', pf='text~4^2'))
         if results:
-            score = [1, results[0]['score'], int(self._abstract_cooccur(results[0], qne, a.ne(), report))]
+            #print('<<%s>> %s' % (query, ['%s:%.3f' % (r['titleText'], r['score']) for r in results[:5]]))
+            score = results[0]['score']
+            cooc = int(self._abstract_cooccur(results[0], qne, a.ne(), report))
+            if len(results) > 1:
+                score += results[1]['score']
+                cooc += int(self._abstract_cooccur(results[1], qne, a.ne(), report))
+            score = [1, score, cooc]
         else:
             score = [0, 0, 0]
         self.scorecache[query] = score
@@ -64,11 +70,10 @@ class SolrFeatures:
             abstract = text
         sentences = segmenter.tokenize(abstract)
         for sent in sentences:
-            if ane[0].surface.lower() not in sent.lower():
-                continue
-            if qne[0].surface.lower() not in sent.lower():
-                continue
-            foundCo = True
+            #print(sent)
+            if ane[0].surface.lower() in sent.lower() and \
+               qne[0].surface.lower() in sent.lower():
+                foundCo = True
 
             self._report({
                 'qId': report['q'].id,
@@ -83,7 +88,7 @@ class SolrFeatures:
                 'score': result['score'],
                 'title': result.get('titleText', ''),
                 'sent': sent,
-                'abstract': abstract,
+                #'abstract': abstract,
             })
         return foundCo
 
